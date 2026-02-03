@@ -1,5 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
-import logoImage from '/vite.svg';
+import logoImage from '/LogoAuraSinFondo.png';
 
 export function Header() {
   return (
