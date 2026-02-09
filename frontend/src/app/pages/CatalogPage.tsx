@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
 import { supabase } from '@/services/supabase';
@@ -10,62 +10,71 @@ const fallbackProducts: Product[] = [
     name: 'Producto 1',
     description:
       'Esta es una breve descripción del producto. Proporciona información básica sobre el artículo.',
-    category: 'Electrónica',
+    category: { id: 1, name: 'Electrónica' },
+    price: 129.99,
   },
   {
     id: 2,
     name: 'Producto 2',
     description:
       'Otra descripción de producto va aquí. Este texto explica de qué trata el producto.',
-    category: 'Ropa',
+    category: { id: 2, name: 'Ropa' },
+    price: 79.5,
   },
   {
     id: 3,
     name: 'Producto 3',
     description:
       'Texto de descripción para este producto. Más detalles sobre las características y beneficios.',
-    category: 'Hogar',
+    category: { id: 3, name: 'Hogar' },
+    price: 54.0,
   },
   {
     id: 4,
     name: 'Producto 4',
     description:
       'Descripción corta del producto para mostrar lo esencial y generar interés.',
-    category: 'Deportes',
+    category: { id: 4, name: 'Deportes' },
+    price: 64.99,
   },
   {
     id: 5,
     name: 'Producto 5',
     description: 'Un resumen claro que destaca el valor principal del producto.',
-    category: 'Libros',
+    category: { id: 5, name: 'Libros' },
+    price: 24.99,
   },
   {
     id: 6,
     name: 'Producto 6',
     description: 'Información breve y directa sobre sus ventajas más importantes.',
-    category: 'Electrónica',
+    category: { id: 1, name: 'Electrónica' },
+    price: 299.0,
   },
   {
     id: 7,
     name: 'Producto 7',
     description: 'Descripción concisa para ayudar a decidir rápidamente.',
-    category: 'Ropa',
+    category: { id: 2, name: 'Ropa' },
+    price: 49.99,
   },
   {
     id: 8,
     name: 'Producto 8',
     description: 'Detalles clave del producto con un lenguaje simple.',
-    category: 'Hogar',
+    category: { id: 3, name: 'Hogar' },
+    price: 89.0,
   },
   {
     id: 9,
     name: 'Producto 9',
     description: 'Breve texto que comunica el beneficio principal del artículo.',
-    category: 'Deportes',
+    category: { id: 4, name: 'Deportes' },
+    price: 110.0,
   },
 ];
 
-const categories = ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Libros'];
+const fallbackCategories = ['Electrónica', 'Ropa', 'Hogar', 'Deportes', 'Libros'];
 
 const hasSupabaseConfig =
   Boolean(import.meta.env.VITE_SUPABASE_URL) &&
@@ -74,6 +83,7 @@ const hasSupabaseConfig =
 export function CatalogPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [categories, setCategories] = useState<string[]>(fallbackCategories);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -88,22 +98,68 @@ export function CatalogPage() {
       setLoading(true);
       setError('');
 
-      const { data, error: fetchError } = await supabase
-        .from('products')
-        .select('id, name, description, category')
-        .order('id', { ascending: true });
+      const [productResponse, categoryResponse] = await Promise.all([
+        supabase
+          .from('products')
+          .select(
+            'id, name, description, price, image_url, category_id, is_active, created_at, categories ( id, name, description, created_at )'
+          )
+          .eq('is_active', true)
+          .order('id', { ascending: true }),
+        supabase.from('categories').select('id, name').order('name', { ascending: true }),
+      ]);
 
       if (!isMounted) {
         return;
       }
 
-      if (fetchError) {
+      if (productResponse.error || categoryResponse.error) {
         setError('No se pudieron cargar los productos desde Supabase.');
         setLoading(false);
         return;
       }
 
-      setProducts((data ?? []) as Product[]);
+      const normalizedProducts = (productResponse.data ?? []).map((row) => {
+        const categoryValue = Array.isArray(row.categories)
+          ? row.categories[0]
+          : row.categories;
+
+        return {
+          id: row.id,
+          name: row.name,
+          description: row.description ?? '',
+          price: row.price ?? null,
+          image_url: row.image_url ?? null,
+          category_id: row.category_id ?? null,
+          category: categoryValue
+            ? {
+                id: categoryValue.id,
+                name: categoryValue.name,
+                description: categoryValue.description ?? null,
+                created_at: categoryValue.created_at ?? null,
+              }
+            : null,
+          is_active: row.is_active ?? null,
+          created_at: row.created_at ?? null,
+        } as Product;
+      });
+
+      const normalizedCategories =
+        (categoryResponse.data ?? []).map((category) => category.name) ?? [];
+
+      const resolvedCategories =
+        normalizedCategories.length > 0
+          ? normalizedCategories
+          : Array.from(
+              new Set(
+                normalizedProducts
+                  .map((product) => product.category?.name)
+                  .filter((value): value is string => Boolean(value))
+              )
+            );
+
+      setProducts(normalizedProducts);
+      setCategories(resolvedCategories);
       setLoading(false);
     }
 
@@ -120,7 +176,7 @@ export function CatalogPage() {
     }
 
     return products.filter((product) =>
-      selectedCategories.includes(product.category ?? '')
+      selectedCategories.includes(product.category?.name ?? '')
     );
   }, [products, selectedCategories]);
 
@@ -134,6 +190,24 @@ export function CatalogPage() {
 
   function clearFilters() {
     setSelectedCategories([]);
+  }
+
+  function formatPrice(price: Product['price']) {
+    if (price === null || price === undefined || price === '') {
+      return 'Precio no disponible';
+    }
+
+    const numericPrice = typeof price === 'string' ? Number(price) : price;
+
+    if (Number.isNaN(numericPrice)) {
+      return 'Precio no disponible';
+    }
+
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 2,
+    }).format(numericPrice);
   }
 
   return (
@@ -200,7 +274,15 @@ export function CatalogPage() {
                       className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                     >
                       <div className="flex h-48 items-center justify-center bg-gradient-to-br from-cyan-100 via-sky-100 to-purple-100 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                        Imagen
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          'Imagen'
+                        )}
                       </div>
                       <div className="space-y-3 p-6">
                         <h3 className="text-base font-semibold text-slate-900">
@@ -209,6 +291,12 @@ export function CatalogPage() {
                         <p className="text-sm leading-relaxed text-slate-600">
                           {product.description}
                         </p>
+                        <div className="flex items-center justify-between text-sm text-slate-500">
+                          <span>{product.category?.name ?? 'Sin categoría'}</span>
+                          <span className="font-semibold text-slate-900">
+                            {formatPrice(product.price)}
+                          </span>
+                        </div>
                         <Link
                           to={`/product/${product.id}`}
                           className="inline-flex items-center gap-2 text-sm font-semibold text-sky-500 transition hover:text-sky-600"

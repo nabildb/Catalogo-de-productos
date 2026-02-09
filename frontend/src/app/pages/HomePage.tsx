@@ -1,8 +1,113 @@
-﻿import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
+import { supabase } from '@/services/supabase';
+import type { Product } from '@/types/product';
 import logoImage from '/LogoAuraSinFondo.png';
 
+const fallbackFeatured: Product[] = [
+  {
+    id: 1,
+    name: 'Producto 1',
+    description: 'Descripción breve del producto destacado',
+    category: { id: 1, name: 'Electrónica' },
+    price: 129.99,
+  },
+  {
+    id: 2,
+    name: 'Producto 2',
+    description: 'Descripción breve del producto destacado',
+    category: { id: 2, name: 'Ropa' },
+    price: 79.5,
+  },
+  {
+    id: 3,
+    name: 'Producto 3',
+    description: 'Descripción breve del producto destacado',
+    category: { id: 3, name: 'Hogar' },
+    price: 54.0,
+  },
+];
+
+const hasSupabaseConfig =
+  Boolean(import.meta.env.VITE_SUPABASE_URL) &&
+  Boolean(import.meta.env.VITE_SUPABASE_ANON_KEY);
+
 export function HomePage() {
+  const [featuredProducts, setFeaturedProducts] =
+    useState<Product[]>(fallbackFeatured);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFeatured() {
+      if (!hasSupabaseConfig) {
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('products')
+        .select(
+          'id, name, description, price, image_url, categories ( id, name, description, created_at )'
+        )
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (!isMounted || error) {
+        return;
+      }
+
+      const normalized = (data ?? []).map((row) => {
+        const categoryValue = Array.isArray(row.categories)
+          ? row.categories[0]
+          : row.categories;
+
+        return {
+          id: row.id,
+          name: row.name,
+          description: row.description ?? '',
+          price: row.price ?? null,
+          image_url: row.image_url ?? null,
+          category: categoryValue
+            ? {
+                id: categoryValue.id,
+                name: categoryValue.name,
+                description: categoryValue.description ?? null,
+                created_at: categoryValue.created_at ?? null,
+              }
+            : null,
+        } as Product;
+      });
+
+      setFeaturedProducts(normalized);
+    }
+
+    loadFeatured();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  function formatPrice(price: Product['price']) {
+    if (price === null || price === undefined || price === '') {
+      return 'Precio no disponible';
+    }
+
+    const numericPrice = typeof price === 'string' ? Number(price) : price;
+
+    if (Number.isNaN(numericPrice)) {
+      return 'Precio no disponible';
+    }
+
+    return new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 2,
+    }).format(numericPrice);
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <Header />
@@ -35,16 +140,33 @@ export function HomePage() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {[1, 2, 3].map((num) => (
-              <div key={num} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="aspect-square bg-gradient-to-br from-[#00D4FF]/20 via-[#5B9FE3]/20 to-[#A855F7]/20 flex items-center justify-center">
-                  <span className="text-xs text-gray-400">PRODUCTO {num}</span>
+            {featuredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+              >
+                <div className="aspect-square bg-gradient-to-br from-[#00D4FF]/20 via-[#5B9FE3]/20 to-[#A855F7]/20 flex items-center justify-center text-xs text-gray-400">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    'Sin imagen'
+                  )}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2">Producto {num}</h3>
-                  <p className="text-sm text-gray-600 mb-3">Descripción breve del producto destacado</p>
+                  <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
+                  <p className="text-sm text-gray-600 mb-3">{product.description}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+                    <span>{product.category?.name ?? 'Sin categoría'}</span>
+                    <span className="font-semibold text-gray-800">
+                      {formatPrice(product.price)}
+                    </span>
+                  </div>
                   <Link
-                    to={`/product/${num}`}
+                    to={`/product/${product.id}`}
                     className="text-sm text-[#5B9FE3] hover:text-[#A855F7] transition-colors"
                   >
                     Ver más →

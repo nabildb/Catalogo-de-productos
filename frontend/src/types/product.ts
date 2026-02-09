@@ -1,8 +1,18 @@
-﻿export type Product = {
+export type ProductCategory = {
+  id: number;
+  name: string;
+  description?: string | null;
+  created_at?: string | null;
+};
+
+export type Product = {
   id: number;
   name: string;
   description: string;
-  category?: string | null;
+  price?: number | string | null;
   image_url?: string | null;
-  price?: number | null;
+  category_id?: number | null;
+  category?: ProductCategory | null;
+  is_active?: boolean | null;
+  created_at?: string | null;
 };
