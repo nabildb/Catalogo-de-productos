@@ -1,4 +1,5 @@
-﻿import { Header } from '@/app/components/Header';
+﻿import { Link } from 'react-router-dom';
+import { Header } from '@/app/components/Header';
 
 export function AdminLoginPage() {
   return (
@@ -40,6 +41,12 @@ export function AdminLoginPage() {
             >
               Entrar
             </button>
+            <Link
+              to="/"
+              className="block text-center text-sm text-slate-700 hover:text-slate-900 mt-4"
+            >
+              Volver al inicio
+            </Link>
           </form>
         </div>
       </div>
