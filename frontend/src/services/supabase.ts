@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undef
 
 if (!supabaseUrl || !supabaseAnonKey) {
   if (import.meta.env.DEV) {
-    console.warn('Supabase env vars are missing. Add them to .env');
+    console.warn('Faltan variables de entorno de Supabase. Añádelas a .env.');
   }
 }
 

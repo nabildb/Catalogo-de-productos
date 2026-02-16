@@ -6,8 +6,7 @@ import type { Product } from '@/types/product';
 
 const fallbackImages = [
   'https://placehold.co/600x400?text=Producto',
-  'https://placehold.co/600x400?text=Imagen+2',
-  'https://placehold.co/600x400?text=Imagen+3',
+  'https://placehold.co/600x400?text=Imagen+2'
 ];
 
 const hasSupabaseConfig =
