@@ -86,6 +86,8 @@ export function CatalogPage() {
   const [categories, setCategories] = useState<string[]>(fallbackCategories);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<'relevance' | 'price-asc' | 'price-desc' | 'name' | 'recent'>('relevance');
 
   useEffect(() => {
     let isMounted = true;
@@ -171,14 +173,41 @@ export function CatalogPage() {
   }, []);
 
   const visibleProducts = useMemo(() => {
-    if (selectedCategories.length === 0) {
-      return products;
+    let list = products.slice();
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      list = list.filter((product) => selectedCategories.includes(product.category?.name ?? ''));
     }
 
-    return products.filter((product) =>
-      selectedCategories.includes(product.category?.name ?? '')
-    );
-  }, [products, selectedCategories]);
+    // Search query
+    if (query.trim() !== '') {
+      const q = query.trim().toLowerCase();
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description ?? '').toLowerCase().includes(q) ||
+          (p.category?.name ?? '').toLowerCase().includes(q)
+      );
+    }
+
+    // Sorting
+    if (sort === 'price-asc') {
+      list.sort((a, b) => (Number(a.price ?? 0) - Number(b.price ?? 0)));
+    } else if (sort === 'price-desc') {
+      list.sort((a, b) => (Number(b.price ?? 0) - Number(a.price ?? 0)));
+    } else if (sort === 'name') {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === 'recent') {
+      list.sort((a, b) => {
+        const ta = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const tb = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return tb - ta;
+      });
+    }
+
+    return list;
+  }, [products, selectedCategories, query, sort]);
 
   function toggleCategory(category: string) {
     setSelectedCategories((prev) =>
@@ -244,13 +273,36 @@ export function CatalogPage() {
           </aside>
 
           <section>
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-semibold text-sky-500">
-                Catálogo de Productos
-              </h1>
-              <p className="text-sm text-slate-500">
-                {visibleProducts.length} productos
-              </p>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-sky-600">Catálogo de Productos</h1>
+                  <p className="text-sm text-slate-500">{visibleProducts.length} productos</p>
+                </div>
+
+                <div className="flex items-center gap-3 w-full max-w-xl">
+                  <label className="relative flex-1">
+                    <input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Buscar por nombre, categoría o descripción..."
+                      className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-200"
+                    />
+                  </label>
+
+                  <select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as any)}
+                    className="rounded-full border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm"
+                  >
+                    <option value="relevance">Relevancia</option>
+                    <option value="recent">Más recientes</option>
+                    <option value="price-asc">Precio: bajo → alto</option>
+                    <option value="price-desc">Precio: alto → bajo</option>
+                    <option value="name">Nombre A→Z</option>
+                  </select>
+                </div>
+              </div>
               {!hasSupabaseConfig && (
                 <p className="text-xs text-amber-500">
                   Configura tus variables de entorno de Supabase para ver los
@@ -271,39 +323,52 @@ export function CatalogPage() {
                 : visibleProducts.map((product) => (
                     <article
                       key={product.id}
-                      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                      className="flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm hover:shadow-md transition group"
                     >
-                      <div className="flex h-48 items-center justify-center bg-gradient-to-br from-cyan-100 via-sky-100 to-purple-100 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                      <div className="flex items-center justify-center p-6">
                         {product.image_url ? (
                           <img
                             src={product.image_url}
                             alt={product.name}
-                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            className="h-36 w-auto object-contain"
                           />
                         ) : (
-                          'Imagen'
+                          <div className="bg-slate-50 rounded-md p-4 shadow-inner ring-1 ring-slate-100">
+                            <svg width="72" height="56" viewBox="0 0 72 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                              <rect width="72" height="56" rx="8" fill="#F1F5F9" />
+                              <path d="M22 34L30 24L38 34H22Z" fill="#E2E8F0" />
+                              <rect x="44" y="18" width="8" height="8" rx="1" fill="#E2E8F0" />
+                            </svg>
+                          </div>
                         )}
                       </div>
-                      <div className="space-y-3 p-6">
-                        <h3 className="text-base font-semibold text-slate-900">
-                          {product.name}
-                        </h3>
-                        <p className="text-sm leading-relaxed text-slate-600">
-                          {product.description}
-                        </p>
-                        <div className="flex items-center justify-between text-sm text-slate-500">
-                          <span>{product.category?.name ?? 'Sin categoría'}</span>
-                          <span className="font-semibold text-slate-900">
-                            {formatPrice(product.price)}
-                          </span>
+
+                      <div className="px-6 pb-6 flex-1 flex flex-col">
+                        <h3 className="text-sm font-medium text-slate-900 line-clamp-2">{product.name}</h3>
+
+                        <div className="mt-2 flex items-center gap-3 text-sm text-slate-500">
+                          <div className="text-lg font-bold text-sky-600">{formatPrice(product.price)}</div>
+                          <div className="text-xs text-slate-500">En stock</div>
                         </div>
-                        <Link
-                          to={`/product/${product.id}`}
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-sky-500 transition hover:text-sky-600"
-                        >
-                          Ver Detalles
-                          <span aria-hidden>→</span>
-                        </Link>
+
+                        <div className="mt-3 text-sm text-slate-600 flex-1 overflow-hidden">{product.description}</div>
+
+                        <div className="mt-4 flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            className="rounded bg-sky-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-sky-600 transition"
+                          >
+                            Añadir al carrito
+                          </button>
+
+                          <Link
+                            to={`/product/${product.id}`}
+                            className="rounded border border-slate-200 px-3 py-2 text-sm font-medium text-sky-600 hover:bg-sky-50"
+                          >
+                            Ver detalles
+                          </Link>
+                        </div>
                       </div>
                     </article>
                   ))}
