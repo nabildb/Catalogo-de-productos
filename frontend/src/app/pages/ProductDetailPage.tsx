@@ -41,7 +41,7 @@ export function ProductDetailPage() {
       const { data, error: fetchError } = await supabase
         .from('products')
         .select(
-          'id, name, description, price, image_url, category_id, is_active, created_at, categories ( id, name, description, created_at )'
+          'id, name, description, price, image_url, image_url_2, category_id, is_active, created_at, categories ( id, name, description, created_at )'
         )
         .eq('id', productId)
         .single();
@@ -66,6 +66,7 @@ export function ProductDetailPage() {
         description: data.description ?? '',
         price: data.price ?? null,
         image_url: data.image_url ?? null,
+        image_url_2: data.image_url_2 ?? null,
         category_id: data.category_id ?? null,
         category: categoryValue
           ? {
@@ -89,11 +90,16 @@ export function ProductDetailPage() {
   }, [id]);
 
   const images = useMemo(() => {
-    if (product?.image_url) {
-      return [product.image_url];
+    const productImages = [product?.image_url, product?.image_url_2].filter(
+      (value): value is string => Boolean(value)
+    );
+
+    if (productImages.length > 0) {
+      return productImages;
     }
+
     return fallbackImages;
-  }, [product?.image_url]);
+  }, [product?.image_url, product?.image_url_2]);
 
   useEffect(() => {
     setSelected(0);

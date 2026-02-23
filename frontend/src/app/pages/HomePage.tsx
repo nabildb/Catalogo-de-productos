@@ -227,8 +227,7 @@ export function HomePage() {
               <div className="order-1 md:order-2">
                 <div className="rounded-2xl overflow-hidden shadow-xl border-4 border-white">
                   <img
-                    src="https://images.unsplash.com/photo-1758873268631-fa944fc5cad2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHRlYW0lMjBjcmVhdGl2ZSUyMHByb2Zlc3Npb25hbHN8ZW58MXx8fHwxNzcwMTQwNTk0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-                    alt="Equipo AURA"
+                    src="TEAM.png"
                     className="w-full h-auto"
                   />
                 </div>
