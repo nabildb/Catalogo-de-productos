@@ -87,7 +87,7 @@ export function ContactPage() {
                   <input
                     id="last_name"
                     className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm focus:border-sky-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/10 transition-all"
-                    placeholder="Ej. Pérez"
+                    placeholder="Ej. Torne"
                   />
                 </div>
               </div>
