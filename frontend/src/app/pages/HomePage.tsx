@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 import { supabase } from '@/services/supabase';
 import type { Product } from '@/types/product';
 import logoImage from '/LogoAuraSinFondo.png';
@@ -71,11 +72,11 @@ export function HomePage() {
           image_url: row.image_url ?? null,
           category: categoryValue
             ? {
-                id: categoryValue.id,
-                name: categoryValue.name,
-                description: categoryValue.description ?? null,
-                created_at: categoryValue.created_at ?? null,
-              }
+              id: categoryValue.id,
+              name: categoryValue.name,
+              description: categoryValue.description ?? null,
+              created_at: categoryValue.created_at ?? null,
+            }
             : null,
         } as Product;
       });
@@ -255,6 +256,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

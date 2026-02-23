@@ -1,4 +1,5 @@
 ﻿import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 
 export function AboutPage() {
   return (
@@ -65,6 +66,7 @@ export function AboutPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

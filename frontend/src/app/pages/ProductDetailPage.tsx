@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Header } from '@/app/components/Header';
+import { Footer } from '@/app/components/Footer';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/services/supabase';
 import type { Product } from '@/types/product';
@@ -18,8 +19,10 @@ export function ProductDetailPage() {
   const [selected, setSelected] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'shipping'>('description');
 
   useEffect(() => {
     let isMounted = true;
@@ -60,7 +63,7 @@ export function ProductDetailPage() {
         ? data.categories[0]
         : data.categories;
 
-      setProduct({
+      const normalizedProduct = {
         id: data.id,
         name: data.name,
         description: data.description ?? '',
@@ -70,16 +73,33 @@ export function ProductDetailPage() {
         category_id: data.category_id ?? null,
         category: categoryValue
           ? {
-              id: categoryValue.id,
-              name: categoryValue.name,
-              description: categoryValue.description ?? null,
-              created_at: categoryValue.created_at ?? null,
-            }
+            id: categoryValue.id,
+            name: categoryValue.name,
+            description: categoryValue.description ?? null,
+            created_at: categoryValue.created_at ?? null,
+          }
           : null,
         is_active: data.is_active ?? null,
         created_at: data.created_at ?? null,
-      });
+      } as Product;
+
+      setProduct(normalizedProduct);
       setLoading(false);
+
+      // Fetch related products
+      if (normalizedProduct.category_id) {
+        const { data: relatedData } = await supabase
+          .from('products')
+          .select('id, name, price, image_url, category_id')
+          .eq('category_id', normalizedProduct.category_id)
+          .neq('id', productId)
+          .eq('is_active', true)
+          .limit(4);
+
+        if (relatedData) {
+          setRelatedProducts(relatedData as Product[]);
+        }
+      }
     }
 
     loadProduct();
@@ -138,9 +158,8 @@ export function ProductDetailPage() {
                     key={`${src}-${i}`}
                     onClick={() => setSelected(i)}
                     aria-label={`Ver imagen ${i + 1}`}
-                    className={`overflow-hidden rounded-lg border p-0.5 transition ${
-                      i === selected ? 'ring-2 ring-sky-300' : 'border-slate-200'
-                    }`}
+                    className={`overflow-hidden rounded-lg border p-0.5 transition ${i === selected ? 'ring-2 ring-sky-300' : 'border-slate-200'
+                      }`}
                   >
                     <img src={src} alt={`thumb ${i + 1}`} className="h-20 w-24 object-contain bg-white" />
                   </button>
@@ -162,9 +181,8 @@ export function ProductDetailPage() {
                     <button
                       key={`m-${src}-${i}`}
                       onClick={() => setSelected(i)}
-                      className={`overflow-hidden rounded-lg border p-0.5 transition ${
-                        i === selected ? 'ring-2 ring-sky-300' : 'border-slate-200'
-                      }`}
+                      className={`overflow-hidden rounded-lg border p-0.5 transition ${i === selected ? 'ring-2 ring-sky-300' : 'border-slate-200'
+                        }`}
                       aria-label={`Ver imagen ${i + 1}`}
                     >
                       <img src={src} alt={`thumb ${i + 1}`} className="h-16 w-24 object-contain bg-white" />
@@ -239,13 +257,110 @@ export function ProductDetailPage() {
                 </button>
               </div>
 
-              <div className="mt-6">
-                <Link to="/products" className="inline-flex items-center gap-2 text-sm font-semibold text-sky-500 transition hover:text-sky-600">← Volver al catálogo</Link>
-              </div>
             </div>
           </div>
+
+          {/* New Sections: Description, Specs, Shipping */}
+          <div className="mt-16 border-t border-slate-200 pt-12">
+            <div className="flex border-b border-slate-200">
+              {(['description', 'specs', 'shipping'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-8 py-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === tab
+                    ? 'border-b-2 border-sky-500 text-sky-600'
+                    : 'text-slate-400 hover:text-slate-600'
+                    }`}
+                >
+                  {tab === 'description' ? 'Descripción' : tab === 'specs' ? 'Especificaciones' : 'Envio y Devoluciones'}
+                </button>
+              ))}
+            </div>
+
+            <div className="py-8">
+              {activeTab === 'description' && (
+                <div className="animate-fadeIn space-y-4">
+                  <h3 className="text-xl font-semibold text-slate-900">Sobre este producto</h3>
+                  <p className="text-slate-600 leading-relaxed">
+                    {product?.description}
+                  </p>
+                  <p className="text-slate-600 leading-relaxed">
+                    Nuestros productos están fabricados con los más altos estándares de calidad, asegurando
+                    durabilidad y un rendimiento excepcional en cualquier situación. El diseño ergonómico
+                    y moderno se integra perfectamente en tu estilo de vida.
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'specs' && (
+                <div className="animate-fadeIn">
+                  <table className="w-full border-collapse">
+                    <tbody>
+                      {[
+                        ['Material', 'Premium Gradual'],
+                        ['Dimensiones', 'Variable según modelo'],
+                        ['Peso', 'Ligero y resistente'],
+                        ['Garantía', '2 años de fabricante'],
+                        ['Origen', 'Importado / Local']
+                      ].map(([key, val]) => (
+                        <tr key={key} className="border-b border-slate-100 last:border-0 text-sm">
+                          <td className="py-3 font-semibold text-slate-900 w-1/3">{key}</td>
+                          <td className="py-3 text-slate-600">{val}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {activeTab === 'shipping' && (
+                <div className="animate-fadeIn space-y-4">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="rounded-xl bg-slate-50 p-6">
+                      <h4 className="font-bold text-slate-900 mb-2">Envío Rápido</h4>
+                      <p className="text-sm text-slate-600">Entregamos en 24-48 horas en toda la península. Envío gratuito en pedidos superiores a 50€.</p>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 p-6">
+                      <h4 className="font-bold text-slate-900 mb-2">Devoluciones Sencillas</h4>
+                      <p className="text-sm text-slate-600">¿No es lo que esperabas? Tienes 30 días para realizar tu devolución de forma totalmente gratuita.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Related Products */}
+          {relatedProducts.length > 0 && (
+            <div className="mt-20">
+              <h2 className="text-2xl font-bold text-slate-900 mb-8">También te puede interesar</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {relatedProducts.map((p) => (
+                  <Link
+                    key={p.id}
+                    to={`/product/${p.id}`}
+                    className="group flex flex-col"
+                    onClick={() => window.scrollTo(0, 0)}
+                  >
+                    <div className="aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition group-hover:shadow-md">
+                      <img
+                        src={p.image_url ?? '/placeholder.png'}
+                        alt={p.name}
+                        className="h-full w-full object-contain p-4 transition duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="mt-4">
+                      <h3 className="text-sm font-semibold text-slate-900 line-clamp-1">{p.name}</h3>
+                      <p className="mt-1 text-sky-600 font-bold">{formatPrice(p.price)}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
