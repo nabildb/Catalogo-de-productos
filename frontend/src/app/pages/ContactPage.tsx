@@ -1,4 +1,5 @@
-﻿import { Header } from '@/app/components/Header';
+﻿// Página de contacto: muestra información, formulario y FAQ.
+import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin, MessageSquare, Globe } from 'lucide-react';

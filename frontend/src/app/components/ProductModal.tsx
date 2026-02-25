@@ -1,3 +1,5 @@
+// Modal reutilizable para crear/editar productos desde el panel admin.
+// Contiene formulario, validación básica y guarda vía `onSave`.
 import { useState, useEffect } from 'react';
 import type { Product, ProductCategory } from '@/types/product';
 import { supabase } from '@/services/supabase';
@@ -21,6 +23,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
     const [categories, setCategories] = useState<ProductCategory[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // Cargar categorías para el select del formulario
     useEffect(() => {
         async function fetchCategories() {
             const { data } = await supabase.from('categories').select('*').order('name');
@@ -29,6 +32,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
         fetchCategories();
     }, []);
 
+    // Sincroniza formulario con el producto a editar (si existe)
     useEffect(() => {
         if (product) {
             setFormData({
@@ -53,6 +57,7 @@ export function ProductModal({ isOpen, onClose, onSave, product }: ProductModalP
 
     if (!isOpen) return null;
 
+    // Envía datos al callback `onSave` proporcionado por el padre
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);

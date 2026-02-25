@@ -1,3 +1,5 @@
+// Contexto de autenticación: proporciona `session`, `user`, `loading`
+// y helpers (p.ej. `signOut`) a toda la aplicación.
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/services/supabase';
@@ -18,14 +20,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get initial session
+        // Al montar: comprobar sesión actual y escuchar cambios de auth
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
         });
 
-        // Listen for auth state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
@@ -37,11 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, []);
 
+    // Cierra sesión vía Supabase
     const signOut = async () => {
         await supabase.auth.signOut();
     };
 
-    const isAdmin = !!user; // For now, any logged-in user is treated as admin as per user request (he creates the user in DB)
+    // Marca simple para UI; extender con roles si hace falta
+    const isAdmin = !!user;
 
     return (
         <AuthContext.Provider value={{ session, user, loading, isAdmin, signOut }}>
@@ -50,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+// Hook de ayuda para consumir el contexto
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {

@@ -1,4 +1,5 @@
-﻿import { Header } from '@/app/components/Header';
+﻿// Página de login (cliente): formulario básico de acceso.
+import { Header } from '@/app/components/Header';
 
 export function LoginPage() {
   return (

@@ -1,3 +1,4 @@
+// Página de catálogo: lista productos, filtros, ordenación y CRUD (para admin).
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
@@ -32,6 +33,7 @@ export function CatalogPage() {
   const [isModalOpenSort, setIsModalOpenSort] = useState(false); // Nuevo estado para el Sort
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Carga productos y categorías desde Supabase (usado en montaje y tras CRUD)
   async function loadProducts() {
     if (!hasSupabaseConfig) return;
 
@@ -93,6 +95,7 @@ export function CatalogPage() {
     loadProducts();
   }, []);
 
+  // Lista visible: aplica filtros de categoría, búsqueda, precio y ordenación
   const visibleProducts = useMemo(() => {
     let list = products.slice();
 
@@ -134,6 +137,7 @@ export function CatalogPage() {
     return list;
   }, [products, selectedCategories, query, sort, minPrice, maxPrice]);
 
+  // Alterna selección de una categoría en los filtros
   function toggleCategory(category: string) {
     setSelectedCategories((prev) =>
       prev.includes(category)
@@ -142,6 +146,7 @@ export function CatalogPage() {
     );
   }
 
+  // Guarda o actualiza producto usando el servicio y recarga la lista
   const handleSaveProduct = async (formData: any) => {
     if (editingProduct) {
       await productService.updateProduct(editingProduct.id, formData);
@@ -151,6 +156,7 @@ export function CatalogPage() {
     loadProducts();
   };
 
+  // Elimina un producto vía servicio y recarga la lista
   const handleDeleteProduct = async (id: number) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       await productService.deleteProduct(id);
@@ -158,6 +164,7 @@ export function CatalogPage() {
     }
   };
 
+  // Formatea precio para mostrar en la UI
   function formatPrice(price: Product['price']) {
     if (!price) return 'Precio no disponible';
     const numericPrice = typeof price === 'string' ? Number(price) : price;
@@ -269,7 +276,6 @@ export function CatalogPage() {
                     />
                   </label>
 
-                  {/* NUEVO DROPDOWN PERSONALIZADO */}
                   {/* NUEVO DROPDOWN CON ANIMACIÓN */}
                   <div className="relative inline-block text-left z-20">
                     <button

@@ -1,4 +1,6 @@
-﻿import { BrowserRouter, Route, Routes } from 'react-router-dom';
+﻿// Define las rutas de la SPA usando react-router.
+// Cada ruta monta la página correspondiente.
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { HomePage } from '@/app/pages/HomePage';
 import { CatalogPage } from '@/app/pages/CatalogPage';
 import { ProductDetailPage } from '@/app/pages/ProductDetailPage';

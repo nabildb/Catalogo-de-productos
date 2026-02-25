@@ -1,4 +1,5 @@
-﻿import { Header } from '@/app/components/Header';
+﻿// Página "Acerca de": misión, equipo y valores de la empresa.
+import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 
 export function AboutPage() {

@@ -1,3 +1,4 @@
+// Página de detalle de producto: galería, ficha, tabs y productos relacionados.
 import { useEffect, useMemo, useState } from 'react';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
@@ -24,6 +25,7 @@ export function ProductDetailPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'shipping'>('description');
 
+  // Cargar el producto por id y productos relacionados
   useEffect(() => {
     let isMounted = true;
 

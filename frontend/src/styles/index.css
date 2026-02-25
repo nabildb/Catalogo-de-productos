@@ -1,4 +1,5 @@
-﻿@import './fonts.css';
+﻿/* Estilos globales: importa tipografías y tema, y aplica base del body */
+@import './fonts.css';
 @import './theme.css';
 @import 'tailwindcss';
 @source '../**/*.{ts,tsx,js,jsx}';

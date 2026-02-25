@@ -1,4 +1,5 @@
-﻿import { Link } from 'react-router-dom';
+﻿// Cabecera de la web: logo, navegación principal y botón de acceso/gestión.
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/app/context/AuthContext';
 import logoImage from '/LogoAuraSinFondo.png';
 
@@ -9,10 +10,12 @@ export function Header() {
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
+          {/* Logo que enlaza al inicio */}
           <Link to="/" className="flex items-center">
             <img src={logoImage} alt="AURA Logo" className="h-10 w-auto" />
           </Link>
 
+          {/* Navegación principal */}
           <nav className="hidden md:flex gap-6">
             <Link to="/" className="text-sm text-gray-700 hover:text-[#5B9FE3] transition-colors">
               Inicio
@@ -28,6 +31,7 @@ export function Header() {
             </Link>
           </nav>
 
+          {/* Área de usuario/admin: muestra login admin o botón de cerrar sesión */}
           <div className="flex items-center gap-4">
             {isAdmin ? (
               <button

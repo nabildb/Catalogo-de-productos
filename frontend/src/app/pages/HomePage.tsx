@@ -1,3 +1,4 @@
+// Página principal (landing): hero, destacados y llamadas a acción.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
@@ -38,6 +39,7 @@ export function HomePage() {
   const [featuredProducts, setFeaturedProducts] =
     useState<Product[]>(fallbackFeatured);
 
+  // Carga productos destacados desde Supabase (fallback si no hay config)
   useEffect(() => {
     let isMounted = true;
 
@@ -91,6 +93,7 @@ export function HomePage() {
     };
   }, []);
 
+  // Formatea precio para mostrar en la UI
   function formatPrice(price: Product['price']) {
     if (price === null || price === undefined || price === '') {
       return 'Precio no disponible';

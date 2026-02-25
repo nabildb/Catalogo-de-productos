@@ -1,4 +1,5 @@
-﻿import React from 'react';
+﻿// Punto de entrada: monta React en el elemento `#root` e importa estilos globales.
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles/index.css';

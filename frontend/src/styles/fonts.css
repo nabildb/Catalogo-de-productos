@@ -1,4 +1,5 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Space+Grotesk:wght@300..700&display=swap');
+﻿/* Fuentes y variables tipográficas usadas en la app */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300..800&family=Space+Grotesk:wght@300..700&display=swap');
 
 :root {
   --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;

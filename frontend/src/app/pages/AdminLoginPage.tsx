@@ -1,4 +1,5 @@
-﻿import { useState } from 'react';
+﻿// Página de acceso admin: inicio de sesión para gestionar el catálogo.
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/app/components/Header';
 import { supabase } from '@/services/supabase';

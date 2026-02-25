@@ -1,4 +1,6 @@
-﻿:root {
+﻿
+/* Variables de color del tema AURA */
+:root {
   --aura-cyan: #00d4ff;
   --aura-blue: #5b9fe3;
   --aura-purple: #a855f7;

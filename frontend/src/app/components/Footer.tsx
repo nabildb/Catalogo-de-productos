@@ -1,3 +1,4 @@
+// Pie de página: logo, enlaces de navegación secundarios, redes y contacto.
 import { Link } from 'react-router-dom';
 import logoImage from '/LogoAuraSinFondo.png';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
@@ -15,6 +16,7 @@ export function Footer() {
         <footer className="mt-20 border-t border-slate-200 bg-white">
             <div className="mx-auto max-w-7xl px-6 py-12">
                 <div className="grid grid-cols-1 gap-12 md:grid-cols-4 lg:grid-cols-5">
+                    {/* Logo y descripción breve */}
                     <div className="lg:col-span-2">
                         <Link to="/" className="flex items-center">
                             <img src={logoImage} alt="AURA Logo" className="h-10 w-auto" />
@@ -38,6 +40,7 @@ export function Footer() {
                         </div>
                     </div>
 
+                    {/* Enlaces de la tienda */}
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Tienda</h3>
                         <ul className="mt-4 space-y-2">
@@ -58,6 +61,7 @@ export function Footer() {
                         </ul>
                     </div>
 
+                    {/* Enlaces de compañía */}
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Compañía</h3>
                         <ul className="mt-4 space-y-2">
@@ -78,6 +82,7 @@ export function Footer() {
                         </ul>
                     </div>
 
+                    {/* Información de contacto */}
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">Contacto</h3>
                         <ul className="mt-4 space-y-3">

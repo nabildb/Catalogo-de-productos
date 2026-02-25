@@ -1,3 +1,4 @@
+// Tipos de datos para productos y categorías usados en toda la app.
 export type ProductCategory = {
   id: number;
   name: string;
