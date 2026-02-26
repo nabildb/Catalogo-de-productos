@@ -9,3 +9,113 @@ body {
   background: #f8fafc;
   color: #0f172a;
 }
+
+/* =============================================
+   KEYFRAMES
+   ============================================= */
+@keyframes aura-fade-in-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aura-fade-in-scale {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes aura-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes aura-shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+
+@keyframes aura-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* =============================================
+   CLASES DE ANIMACIÓN REUTILIZABLES
+   ============================================= */
+
+/* Entrada básica fade + sube */
+.aura-fade-in-up {
+  animation: aura-fade-in-up var(--dur-slow) var(--ease-out) both;
+}
+
+/* Entrada fade + escala */
+.aura-fade-in-scale {
+  animation: aura-fade-in-scale var(--dur-base) var(--ease-spring) both;
+}
+
+/* Fade simple */
+.aura-fade-in {
+  animation: aura-fade-in var(--dur-base) var(--ease-smooth) both;
+}
+
+/* Float decorativo */
+.aura-float {
+  animation: aura-float 5s ease-in-out infinite;
+}
+
+/* Delays de escalonado (stagger) */
+.aura-delay-0  { animation-delay:   0ms; }
+.aura-delay-1  { animation-delay: 100ms; }
+.aura-delay-2  { animation-delay: 220ms; }
+.aura-delay-3  { animation-delay: 360ms; }
+.aura-delay-4  { animation-delay: 500ms; }
+.aura-delay-5  { animation-delay: 640ms; }
+
+/* =============================================
+   SKELETON SHIMMER
+   ============================================= */
+.aura-skeleton {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 25%,
+    #e2e8f0 50%,
+    #f1f5f9 75%
+  );
+  background-size: 200% 100%;
+  animation: aura-shimmer 1.6s ease-in-out infinite;
+}
+
+/* =============================================
+   UNDERLINE ANIMADO PARA LINKS DE NAV
+   ============================================= */
+.aura-nav-link {
+  position: relative;
+}
+.aura-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--aura-cyan), var(--aura-blue), var(--aura-purple));
+  transition: width var(--dur-base) var(--ease-out);
+}
+.aura-nav-link:hover::after,
+.aura-nav-link[aria-current="page"]::after {
+  width: 100%;
+}
+
+/* =============================================
+   PREFERS-REDUCED-MOTION: desactiva animaciones
+   ============================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration:         0.01ms !important;
+    animation-iteration-count:  1      !important;
+    transition-duration:        0.01ms !important;
+    scroll-behavior:            auto   !important;
+  }
+}
